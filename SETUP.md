@@ -424,18 +424,17 @@ sudo -u postgres psql
 ```
 
 Then run:
-
 ```sql
 CREATE DATABASE mcmc_complaints;
 
-CREATE USER mcmc_app WITH PASSWORD 'mcmc_local_dev_password';
+CREATE USER mcmc_dev_cms WITH PASSWORD 'mcmc@dev@cms';
 
-GRANT ALL PRIVILEGES ON DATABASE mcmc_complaints TO mcmc_app;
+GRANT ALL PRIVILEGES ON DATABASE mcmc_complaints TO mcmc_dev_cms;
 
 -- Connect to the new database to grant schema privileges
 \c mcmc_complaints
 
-GRANT ALL ON SCHEMA public TO mcmc_app;
+GRANT ALL ON SCHEMA public TO mcmc_dev_cms;
 
 \q
 ```
@@ -450,7 +449,7 @@ GRANT ALL ON SCHEMA public TO mcmc_app;
 Verify the connection works with the new user:
 
 ```bash
-psql -U mcmc_app -d mcmc_complaints -c "SELECT current_user, current_database();"
+psql -U mcmc_dev_cms -d mcmc_complaints -c "SELECT current_user, current_database();"
 ```
 
 ---
@@ -526,7 +525,7 @@ mkdir -p src/{config,constants,db/{migrations,seeds},repositories,services,contr
 NODE_ENV=development
 PORT=3000
 
-DATABASE_URL=postgresql://mcmc_app:your_password@localhost:5432/mcmc_complaints
+DATABASE_URL=postgresql://mcmc_dev_cms:your_password@localhost:5432/mcmc_complaints
 
 JWT_SECRET=replace_with_a_long_random_string
 JWT_EXPIRES_IN=8h
@@ -781,7 +780,7 @@ If the text is centred, blue, and semibold, the frontend toolchain is correct.
 Because the backend and frontend are separate npm projects in one repository, a **multi-root
 workspace** gives you one window with both, and lets ESLint resolve each project's own config.
 
-Create `mcmc-complaint-system.code-workspace` in the repository root:
+Create `ComplaintManagementSystem.code-workspace` in the repository root:
 
 ```json
 {
@@ -817,7 +816,7 @@ Create `mcmc-complaint-system.code-workspace` in the repository root:
 From then on, open the project with **File → Open Workspace from File**, or:
 
 ```bash
-code mcmc-complaint-system.code-workspace
+code ComplaintManagementSystem.code-workspace
 ```
 
 > **`files.eol: "\n"`** matters on Windows. Without it, Git shows every file as modified due to
@@ -966,10 +965,10 @@ psql -U postgres
 
 ```sql
 CREATE DATABASE mcmc_complaints;
-CREATE USER mcmc_app WITH PASSWORD 'mcmc_local_dev_password';
-GRANT ALL PRIVILEGES ON DATABASE mcmc_complaints TO mcmc_app;
+CREATE USER mcmc_dev_cms WITH PASSWORD 'mcmc@dev@cms';
+GRANT ALL PRIVILEGES ON DATABASE mcmc_complaints TO mcmc_dev_cms;
 \c mcmc_complaints
-GRANT ALL ON SCHEMA public TO mcmc_app;
+GRANT ALL ON SCHEMA public TO mcmc_dev_cms;
 \q
 ```
 
@@ -1034,10 +1033,10 @@ the real problem.
 - [ ] `code --version` → any
 
 **Database**
-- [ ] `psql -U mcmc_app -d mcmc_complaints -c "SELECT 1;"` connects without error
+- [ ] `psql -U mcmc_dev_cms -d mcmc_complaints -c "SELECT 1;"` connects without error
 - [ ] `npm run db:reset` completes with no errors
-- [ ] `psql -U mcmc_app -d mcmc_complaints -c "SELECT COUNT(*) FROM complaints;"` returns 10
-- [ ] `psql -U mcmc_app -d mcmc_complaints -c "SELECT COUNT(*) FROM users;"` returns 2
+- [ ] `psql -U mcmc_dev_cms -d mcmc_complaints -c "SELECT COUNT(*) FROM complaints;"` returns 10
+- [ ] `psql -U mcmc_dev_cms -d mcmc_complaints -c "SELECT COUNT(*) FROM users;"` returns 2
 
 **Backend**
 - [ ] `npm run dev` starts with no errors
@@ -1071,8 +1070,8 @@ the real problem.
 | Symptom | Cause | Fix |
 |---|---|---|
 | `ECONNREFUSED 127.0.0.1:5432` | PostgreSQL is not running | Windows: start the `postgresql-x64-17` service in Services. macOS: open Postgres.app, or `brew services start postgresql@17`. Linux: `sudo systemctl start postgresql` |
-| `password authentication failed for user "mcmc_app"` | Password in `DATABASE_URL` does not match | Re-check `.env`. If unsure: `ALTER USER mcmc_app WITH PASSWORD 'new_password';` then update `.env` |
-| `permission denied for schema public` | **The PostgreSQL 15+ issue** | `\c mcmc_complaints` then `GRANT ALL ON SCHEMA public TO mcmc_app;` |
+| `password authentication failed for user "mcmc_dev_cms"` | Password in `DATABASE_URL` does not match | Re-check `.env`. If unsure: `ALTER USER mcmc_dev_cms WITH PASSWORD 'mcmc@dev@cms';` then update `.env` |
+| `permission denied for schema public` | **The PostgreSQL 15+ issue** | `\c mcmc_complaints` then `GRANT ALL ON SCHEMA public TO mcmc_dev_cms;` |
 | `database "mcmc_complaints" does not exist` | Never created | See [2.2](#22-create-the-database) |
 | `psql: command not found` | Not on PATH | Windows: add `C:\Program Files\PostgreSQL\17\bin` to PATH and open a new terminal. macOS: see [1.4](#14-install-postgresql) |
 | `relation "complaints" does not exist` | Migrations never ran | `npm run db:reset` |
@@ -1147,16 +1146,16 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Proc
 cd backend && npm run db:reset
 
 # Open a SQL shell
-psql -U mcmc_app -d mcmc_complaints
+psql -U mcmc_dev_cms -d mcmc_complaints
 
 # List tables
-psql -U mcmc_app -d mcmc_complaints -c "\dt"
+psql -U mcmc_dev_cms -d mcmc_complaints -c "\dt"
 
 # Inspect a table's structure
-psql -U mcmc_app -d mcmc_complaints -c "\d complaints"
+psql -U mcmc_dev_cms -d mcmc_complaints -c "\d complaints"
 
 # Quick row counts
-psql -U mcmc_app -d mcmc_complaints -c "SELECT status, COUNT(*) FROM complaints GROUP BY status;"
+psql -U mcmc_dev_cms -d mcmc_complaints -c "SELECT status, COUNT(*) FROM complaints GROUP BY status;"
 ```
 
 Useful `psql` commands once you are inside:
